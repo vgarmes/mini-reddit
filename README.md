@@ -8,10 +8,10 @@ Create a PostgreSQL database
 
 ## Tech stack:
 
-> Typescript
+- Typescript
 
-### Backend:
+> Backend:
 
-> PostgreSQL database  
-> MikroORM: Typescript ORM for connecting and manipulating the database.  
-> Apollo: GraphQL server
+- PostgreSQL database
+- MikroORM: Typescript ORM for connecting and manipulating the database.
+- Apollo: GraphQL server
