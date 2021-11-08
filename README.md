@@ -1,6 +1,6 @@
 # mini-reddit
 
-A basic reddit clone, inspired by Ben Awad's [lireddit](https://github.com/benawad/lireddit).
+A basic reddit clone, inspired by[Ben Awad's lireddit](https://github.com/benawad/lireddit).
 
 ## Requirements:
 
@@ -12,6 +12,6 @@ Create a PostgreSQL database
 
 ### Backend:
 
-> PostgreSQL database
-> MikroORM: Typescript ORM for connecting and manipulating the database.
+> PostgreSQL database  
+> MikroORM: Typescript ORM for connecting and manipulating the database.  
 > Apollo: GraphQL server
