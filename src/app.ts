@@ -11,7 +11,7 @@ import { UserResolver } from './resolvers/user';
 import redis from 'redis';
 import session from 'express-session';
 import connectRedis from 'connect-redis';
-import { MyContext } from './types';
+import cors from 'cors';
 
 const main = async () => {
   const orm = await MikroORM.init(microConfig);
@@ -21,6 +21,14 @@ const main = async () => {
 
   const RedisStore = connectRedis(session);
   const redisClient = redis.createClient();
+
+  app.set('trust proxy', 1);
+  app.use(
+    cors({
+      origin: 'https://studio.apollographql.com',
+      credentials: true,
+    })
+  );
 
   // redis session middleware has to run before apollo server, because we will use it in apollo
   app.use(
@@ -34,9 +42,9 @@ const main = async () => {
         maxAge: 1000 * 60 * 60 * 24 * 365,
         httpOnly: true, // so user cant access cookie from the frontend
         sameSite: 'lax', // csrf
-        secure: __prod__, // cookie only works in https (only in production)
+        secure: true, // __prod__ : cookie only works in https (only in production)
       },
-      saveUninitialized: false,
+      saveUninitialized: false, // do not store empty sessions
       secret: 'keyboard cat',
       resave: false,
     })
@@ -47,11 +55,11 @@ const main = async () => {
       resolvers: [HelloResolver, PostResolver, UserResolver],
       validate: false,
     }),
-    context: ({ req, res }): MyContext => ({ em: orm.em, req, res }), // context available to all resolvers
+    context: ({ req, res }) => ({ em: orm.em, req, res }), // context available to all resolvers
   });
 
   await apolloServer.start();
-  apolloServer.applyMiddleware({ app });
+  apolloServer.applyMiddleware({ app, cors: false });
 
   app.listen(5000, () => {
     console.log('server listening on port 5000...');
