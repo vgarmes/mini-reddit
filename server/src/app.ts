@@ -23,9 +23,20 @@ const main = async () => {
   const redisClient = redis.createClient();
 
   app.set('trust proxy', 1);
+  const whitelist = ['http://localhost:3000'];
   app.use(
     cors({
-      origin: 'https://studio.apollographql.com',
+      origin: function (origin, callback) {
+        if (!__prod__) {
+          return callback(null, true);
+        }
+
+        if (origin && whitelist.indexOf(origin) !== -1) {
+          callback(null, true);
+        } else {
+          callback(new Error(`${origin} : Not allowed by CORS`));
+        }
+      },
       credentials: true,
     })
   );
