@@ -52,8 +52,8 @@ const main = async () => {
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 365,
         httpOnly: true, // so user cant access cookie from the frontend
-        sameSite: __prod__ ? 'lax' : 'none', // csrf, set to none in dev env so cookie can be sent to Apollo Studio
-        secure: true, // cookie only works in https
+        sameSite: 'lax', // csrf, set to none in dev env so cookie can be sent to Apollo Studio
+        secure: __prod__, // cookie only works in https
       },
       saveUninitialized: false, // do not store empty sessions
       secret: 'keyboard cat',
