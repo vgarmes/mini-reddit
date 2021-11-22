@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { MikroORM } from '@mikro-orm/core';
-import { __prod__ } from './constants';
+import { COOKIE_NAME, COOKIE_OPTIONS, __prod__ } from './constants';
 import microConfig from './mikro-orm.config';
 import express from 'express';
 import { ApolloServer } from 'apollo-server-express';
@@ -44,17 +44,12 @@ const main = async () => {
   // redis session middleware has to run before apollo server, because we will use it in apollo
   app.use(
     session({
-      name: 'qid',
+      name: COOKIE_NAME,
       store: new RedisStore({
         client: redisClient,
         disableTouch: true,
       }),
-      cookie: {
-        maxAge: 1000 * 60 * 60 * 24 * 365,
-        httpOnly: true, // so user cant access cookie from the frontend
-        sameSite: 'lax', // csrf, set to none in dev env so cookie can be sent to Apollo Studio
-        secure: __prod__, // cookie only works in https
-      },
+      cookie: COOKIE_OPTIONS,
       saveUninitialized: false, // do not store empty sessions
       secret: 'keyboard cat',
       resave: false,

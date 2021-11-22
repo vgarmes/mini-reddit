@@ -8,9 +8,10 @@ import {
   ObjectType,
   Query,
 } from 'type-graphql';
-import { MyContext } from 'src/types';
+import { MyContext } from '../types';
 import { User } from '../entities/User';
 import argon2 from 'argon2';
+import { COOKIE_OPTIONS, COOKIE_NAME } from '../constants';
 
 @InputType()
 class UsernamePasswordInput {
@@ -123,5 +124,25 @@ export class UserResolver {
     req.session.userId = user.id;
 
     return { user };
+  }
+
+  @Mutation(() => Boolean)
+  logout(@Ctx() { req, res }: MyContext) {
+    return new Promise((resolve) =>
+      req.session.destroy((err) => {
+        // first we destroy the cookie, even if we are not able to destroy the session
+        res.clearCookie(COOKIE_NAME, {
+          sameSite: COOKIE_OPTIONS.sameSite,
+          secure: COOKIE_OPTIONS.secure,
+        }); // cookie options have to be the same that were passed when creating the cookie
+        if (err) {
+          console.log(err);
+          resolve(false);
+          return;
+        }
+
+        resolve(true);
+      })
+    );
   }
 }
