@@ -12,14 +12,24 @@ import { MyContext } from '../types';
 import { User } from '../entities/User';
 import argon2 from 'argon2';
 import { COOKIE_OPTIONS, COOKIE_NAME } from '../constants';
+import { IsEmail, Length, Matches, MinLength, validate } from 'class-validator';
 
 @InputType()
 class UsernamePasswordInput {
   @Field()
+  @IsEmail()
   email: string;
+
   @Field()
+  @Length(3, 20)
+  @Matches(/^[a-zA-Z0-9_.]*$/, {
+    message:
+      'Usernames may only contain letters, numbers, underscores ("_") and periods (".")',
+  })
   username: string;
+
   @Field()
+  @MinLength(8)
   password: string;
 }
 
@@ -63,9 +73,21 @@ export class UserResolver {
     @Arg('options') options: UsernamePasswordInput,
     @Ctx() { em, req }: MyContext
   ): Promise<UserResponse> {
-    // add validation
+    const validationErrors = await validate(options);
+
+    if (validationErrors.length > 0) {
+      return {
+        errors: validationErrors.map((err) => ({
+          field: err.property,
+          message: err.constraints
+            ? Object.values(err.constraints)[0]
+            : 'not valid',
+        })),
+      };
+    }
 
     const hashedPassword = await argon2.hash(options.password);
+
     const user = em.create(User, {
       username: options.username,
       email: options.email,
