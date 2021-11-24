@@ -7,3 +7,4 @@ export const COOKIE_OPTIONS = {
   sameSite: 'lax', // 'lax' csrf, set to none in dev env so cookie can be sent to Apollo Studio
   secure: __prod__, // __prod__ cookie only works in https
 } as CookieOptions;
+export const FORGET_PASSWORD_PREFIX = 'forget-password:';
