@@ -1,61 +1,93 @@
-import {
-  Resolver,
-  Mutation,
-  InputType,
-  Field,
-  Arg,
-  Ctx,
-  ObjectType,
-  Query,
-} from 'type-graphql';
+import { Resolver, Mutation, Arg, Ctx, Query } from 'type-graphql';
 import { MyContext } from '../types';
+import {
+  PasswordInput,
+  UsernamePasswordInput,
+  UserResponse,
+} from './user-types';
 import { User } from '../entities/User';
 import argon2 from 'argon2';
-import { COOKIE_OPTIONS, COOKIE_NAME } from '../constants';
-import { IsEmail, Length, Matches, MinLength, validate } from 'class-validator';
-
-@InputType()
-class UsernamePasswordInput {
-  @Field()
-  @IsEmail()
-  email: string;
-
-  @Field()
-  @Length(3, 20)
-  @Matches(/^[a-zA-Z0-9_.]*$/, {
-    message:
-      'Usernames may only contain letters, numbers, underscores ("_") and periods (".")',
-  })
-  username: string;
-
-  @Field()
-  @MinLength(8)
-  password: string;
-}
-
-@ObjectType()
-class FieldError {
-  @Field()
-  field: string;
-
-  @Field()
-  message: string;
-}
-
-@ObjectType()
-class UserResponse {
-  @Field(() => [FieldError], { nullable: true })
-  errors?: FieldError[];
-
-  @Field(() => User, { nullable: true })
-  user?: User;
-}
+import {
+  COOKIE_OPTIONS,
+  COOKIE_NAME,
+  FORGET_PASSWORD_PREFIX,
+} from '../constants';
+import { validate } from 'class-validator';
+import { sendEmail } from '../utils/sendEmail';
+import { v4 } from 'uuid';
+import { mapValidationErrors } from 'src/utils/mapValidationErrors';
 
 @Resolver()
 export class UserResolver {
+  @Mutation(() => UserResponse)
+  async changePassword(
+    @Arg('token') token: string,
+    @Arg('newPassword') newPassword: PasswordInput,
+    @Ctx() { redis, em, req }: MyContext
+  ): Promise<UserResponse> {
+    const validationErrors = await validate(newPassword);
+
+    if (validationErrors.length > 0) {
+      return {
+        errors: mapValidationErrors(validationErrors),
+      };
+    }
+
+    const userId = await redis.get(FORGET_PASSWORD_PREFIX + token);
+    if (!userId) {
+      return {
+        errors: [
+          {
+            field: 'token',
+            message: 'token expired',
+          },
+        ],
+      };
+    }
+
+    const user = await em.findOne(User, { id: parseInt(userId) });
+
+    if (!user) {
+      return {
+        errors: [
+          {
+            field: 'token',
+            message: 'user no longer exists',
+          },
+        ],
+      };
+    }
+
+    user.password = await argon2.hash(newPassword.password);
+    em.persistAndFlush(user);
+
+    // log in user after changing password
+    req.session.userId = user.id;
+
+    return { user };
+  }
+
   @Mutation(() => Boolean)
-  async forgotPassword(@Arg('email') email: string, @Ctx() { em }: MyContext) {
-    //const user = await em.findOne(User,{email});
+  async forgotPassword(
+    @Arg('email') email: string,
+    @Ctx() { em, redis }: MyContext
+  ) {
+    const user = await em.findOne(User, { email });
+    if (!user) {
+      return true; // for security reasons we don't return to the client info on whether the user exists or not
+    }
+
+    const token = v4();
+
+    await redis.set(
+      FORGET_PASSWORD_PREFIX + token,
+      user.id,
+      'ex',
+      1000 * 60 * 60 * 24 // 1 day of expiration
+    );
+
+    `<a href="http://localhost:3000/change-password/${token}">reset password</a>`;
+    await sendEmail(email, '');
     return true;
   }
 
