@@ -20,7 +20,7 @@ const main = async () => {
   const app = express();
 
   const RedisStore = connectRedis(session);
-  const redis = Redis();
+  const redis = new Redis();
 
   app.set('trust proxy', 1);
   const whitelist = ['http://localhost:3000'];
