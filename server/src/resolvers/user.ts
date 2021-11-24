@@ -15,7 +15,7 @@ import {
 import { validate } from 'class-validator';
 import { sendEmail } from '../utils/sendEmail';
 import { v4 } from 'uuid';
-import { mapValidationErrors } from 'src/utils/mapValidationErrors';
+import { mapValidationErrors } from '../utils/mapValidationErrors';
 
 @Resolver()
 export class UserResolver {
