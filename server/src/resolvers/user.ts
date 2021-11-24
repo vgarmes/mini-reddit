@@ -88,8 +88,8 @@ export class UserResolver {
       1000 * 60 * 60 * 24 // 1 day of expiration
     );
 
-    `<a href="http://localhost:3000/change-password/${token}">reset password</a>`;
-    await sendEmail(email, '');
+    const htmlContent = `<a href="http://localhost:3000/change-password/${token}">reset password</a>`;
+    await sendEmail(email, htmlContent);
     return true;
   }
 
