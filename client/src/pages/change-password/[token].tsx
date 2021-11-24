@@ -2,7 +2,6 @@ import { useRouter } from 'next/router';
 import { Form, Formik } from 'formik';
 import { useState } from 'react';
 import { toErrorMap } from '../../utils/toErrorMap';
-import login from '../login';
 import { Button } from '@chakra-ui/button';
 import { Box } from '@chakra-ui/layout';
 import InputField from '../../components/InputField';
@@ -35,12 +34,6 @@ const ChangePassword = () => {
           } else if (response.data?.changePassword.user) {
             router.push('/');
           }
-          /* const response = await login(values);
-          if (response.data?.login.errors) {
-            setErrors(toErrorMap(response.data.login.errors));
-          } else if (response.data?.login.user) {
-            router.push('/');
-          } */
         }}
       >
         {({ isSubmitting }) => (
