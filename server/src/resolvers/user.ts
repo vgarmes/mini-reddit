@@ -23,7 +23,7 @@ export class UserResolver {
   async changePassword(
     @Arg('token') token: string,
     @Arg('newPassword') newPassword: PasswordInput,
-    @Ctx() { redis, em, req }: MyContext
+    @Ctx() { redis, req }: MyContext
   ): Promise<UserResponse> {
     const validationErrors = await validate(newPassword);
 
@@ -45,7 +45,8 @@ export class UserResolver {
       };
     }
 
-    const user = await em.findOne(User, { id: parseInt(userId) });
+    const userIdNum = parseInt(userId);
+    const user = await User.findOne(userIdNum);
 
     if (!user) {
       return {
@@ -58,8 +59,10 @@ export class UserResolver {
       };
     }
 
-    user.password = await argon2.hash(newPassword.password);
-    em.persistAndFlush(user);
+    await User.update(
+      { id: userIdNum },
+      { password: await argon2.hash(newPassword.password) }
+    );
 
     await redis.del(key);
 
@@ -72,9 +75,9 @@ export class UserResolver {
   @Mutation(() => Boolean)
   async forgotPassword(
     @Arg('email') email: string,
-    @Ctx() { em, redis }: MyContext
+    @Ctx() { redis }: MyContext
   ) {
-    const user = await em.findOne(User, { email });
+    const user = await User.findOne({ where: { email } });
     if (!user) {
       return true; // for security reasons we don't return to the client info on whether the user exists or not
     }
@@ -94,42 +97,36 @@ export class UserResolver {
   }
 
   @Query(() => User, { nullable: true })
-  async me(@Ctx() { req, em }: MyContext) {
+  me(@Ctx() { req }: MyContext) {
     if (!req.session.userId) {
       return null;
     }
-    const user = await em.findOne(User, { id: req.session.userId });
-    return user;
+    return User.findOne(req.session.userId);
   }
 
   @Mutation(() => UserResponse)
   async register(
     @Arg('options') options: UsernamePasswordInput,
-    @Ctx() { em, req }: MyContext
+    @Ctx() { req }: MyContext
   ): Promise<UserResponse> {
     const validationErrors = await validate(options);
 
     if (validationErrors.length > 0) {
       return {
-        errors: validationErrors.map((err) => ({
-          field: err.property,
-          message: err.constraints
-            ? Object.values(err.constraints)[0]
-            : 'not valid',
-        })),
+        errors: mapValidationErrors(validationErrors),
       };
     }
 
     const hashedPassword = await argon2.hash(options.password);
 
-    const user = em.create(User, {
+    const user = User.create({
       username: options.username,
       email: options.email,
       password: hashedPassword,
     });
 
     try {
-      await em.persistAndFlush(user);
+      await user.save();
     } catch (error) {
       if (error.code === '23505') {
         return {
@@ -142,6 +139,7 @@ export class UserResolver {
         };
       }
     }
+
     // store user id session
     // this will set a cookie on the user (log in)
     req.session.userId = user.id;
@@ -153,13 +151,12 @@ export class UserResolver {
   async login(
     @Arg('usernameOrEmail') usernameOrEmail: string,
     @Arg('password') password: string,
-    @Ctx() { em, req }: MyContext
+    @Ctx() { req }: MyContext
   ): Promise<UserResponse> {
-    const user = await em.findOne(
-      User,
+    const user = await User.findOne(
       usernameOrEmail.includes('@')
-        ? { email: usernameOrEmail }
-        : { username: usernameOrEmail }
+        ? { where: { email: usernameOrEmail } }
+        : { where: { username: usernameOrEmail } }
     );
     if (!user) {
       return {
