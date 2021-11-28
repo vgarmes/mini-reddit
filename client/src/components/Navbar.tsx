@@ -5,7 +5,7 @@ import { isSSR } from '../utils/isSSR';
 
 interface NavbarProps {}
 
-export const Navbar: React.FC<NavbarProps> = ({}) => {
+const Navbar: React.FC<NavbarProps> = ({}) => {
   const [{ fetching: logoutFetching }, logout] = useLogoutMutation();
   const [{ data, fetching }] = useMeQuery({
     pause: isSSR(),
@@ -47,3 +47,5 @@ export const Navbar: React.FC<NavbarProps> = ({}) => {
     </Flex>
   );
 };
+
+export default Navbar;
