@@ -1,4 +1,3 @@
-import { Navbar } from '../components/Navbar';
 import { createUrqlClient } from '../utils/createUrqlClient';
 import { withUrqlClient } from 'next-urql';
 import { usePostsQuery } from '../generated/graphql';
@@ -8,7 +7,6 @@ const Index = () => {
 
   return (
     <>
-      <Navbar />
       <div>hello world!</div>
       <br />
       {!data ? (
