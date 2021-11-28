@@ -20,7 +20,7 @@ A basic reddit clone, inspired by [Ben Awad's lireddit](https://github.com/benaw
 > Node.js / Express, in Typescript.
 
 - [PostgreSQL](https://www.postgresql.org/): database
-- [MikroORM](https://mikro-orm.io/docs): Typescript ORM for connecting to PostgreSQL databases.
+- [TypeORM](https://typeorm.io/#): Typescript ORM for connecting to PostgreSQL databases.
 - [GraphQL.js](https://graphql.org/graphql-js/): Javascript implementation for GraphQL, for building type schemas and serving queries against them (Note: stick to the 15.x version of GraphQL, since v16 contains [breaking changes for TypeGraphQL](https://github.com/MichalLytek/type-graphql/issues/1100)).
 - [TypeGraphQL](https://typegraphql.com/docs): Typescript classes and decorators for defining GraphQL schemas and resolvers.
 - [Apollo Server](https://www.apollographql.com/docs): GraphQL server
