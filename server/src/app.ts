@@ -14,17 +14,21 @@ import cors from 'cors';
 import { createConnection } from 'typeorm';
 import { User } from './entities/User';
 import { Post } from './entities/Post';
+import path from 'path';
 
 const main = async () => {
-  await createConnection({
+  const conn = await createConnection({
     type: 'postgres',
     database: 'minireddit',
     username: 'postgres',
     password: 'postgres',
     logging: true,
     synchronize: true, // creates tables automatically without having to use migrations
+    migrations: [path.join(__dirname, './migrations/*')],
     entities: [Post, User],
   });
+
+  await conn.runMigrations();
 
   const app = express();
 
