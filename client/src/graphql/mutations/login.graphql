@@ -1,5 +1,5 @@
 mutation Login($password: String!, $usernameOrEmail: String!) {
   login(password: $password, usernameOrEmail: $usernameOrEmail) {
-    ...UserResponseFragment
+    ...UserResponse
   }
 }

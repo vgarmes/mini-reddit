@@ -146,13 +146,13 @@ export type UsernamePasswordInput = {
   username: Scalars['String'];
 };
 
-export type ErrorFragmentFragment = { __typename?: 'FieldError', field: string, message: string };
+export type ErrorFragment = { __typename?: 'FieldError', field: string, message: string };
 
 export type PostSnippetFragment = { __typename?: 'Post', id: number, title: string, textSnippet: string, points: number, creatorId: number, createdAt: string, creator: { __typename?: 'User', id: number, username: string } };
 
-export type UserFragmentFragment = { __typename?: 'User', id: number, username: string };
+export type UserResponseFragment = { __typename?: 'UserResponse', errors?: Array<{ __typename?: 'FieldError', field: string, message: string }> | null | undefined, user?: { __typename?: 'User', id: number, username: string } | null | undefined };
 
-export type UserResponseFragmentFragment = { __typename?: 'UserResponse', errors?: Array<{ __typename?: 'FieldError', field: string, message: string }> | null | undefined, user?: { __typename?: 'User', id: number, username: string } | null | undefined };
+export type UserSnippetFragment = { __typename?: 'User', id: number, username: string };
 
 export type ChangePasswordMutationVariables = Exact<{
   newPassword: PasswordInput;
@@ -223,36 +223,36 @@ export const PostSnippetFragmentDoc = gql`
   }
 }
     `;
-export const ErrorFragmentFragmentDoc = gql`
-    fragment ErrorFragment on FieldError {
+export const ErrorFragmentDoc = gql`
+    fragment Error on FieldError {
   field
   message
 }
     `;
-export const UserFragmentFragmentDoc = gql`
-    fragment UserFragment on User {
+export const UserSnippetFragmentDoc = gql`
+    fragment UserSnippet on User {
   id
   username
 }
     `;
-export const UserResponseFragmentFragmentDoc = gql`
-    fragment UserResponseFragment on UserResponse {
+export const UserResponseFragmentDoc = gql`
+    fragment UserResponse on UserResponse {
   errors {
-    ...ErrorFragment
+    ...Error
   }
   user {
-    ...UserFragment
+    ...UserSnippet
   }
 }
-    ${ErrorFragmentFragmentDoc}
-${UserFragmentFragmentDoc}`;
+    ${ErrorFragmentDoc}
+${UserSnippetFragmentDoc}`;
 export const ChangePasswordDocument = gql`
     mutation ChangePassword($newPassword: PasswordInput!, $token: String!) {
   changePassword(newPassword: $newPassword, token: $token) {
-    ...UserResponseFragment
+    ...UserResponse
   }
 }
-    ${UserResponseFragmentFragmentDoc}`;
+    ${UserResponseFragmentDoc}`;
 
 export function useChangePasswordMutation() {
   return Urql.useMutation<ChangePasswordMutation, ChangePasswordMutationVariables>(ChangePasswordDocument);
@@ -286,10 +286,10 @@ export function useForgotPasswordMutation() {
 export const LoginDocument = gql`
     mutation Login($password: String!, $usernameOrEmail: String!) {
   login(password: $password, usernameOrEmail: $usernameOrEmail) {
-    ...UserResponseFragment
+    ...UserResponse
   }
 }
-    ${UserResponseFragmentFragmentDoc}`;
+    ${UserResponseFragmentDoc}`;
 
 export function useLoginMutation() {
   return Urql.useMutation<LoginMutation, LoginMutationVariables>(LoginDocument);
@@ -306,10 +306,10 @@ export function useLogoutMutation() {
 export const RegisterDocument = gql`
     mutation Register($options: UsernamePasswordInput!) {
   register(options: $options) {
-    ...UserResponseFragment
+    ...UserResponse
   }
 }
-    ${UserResponseFragmentFragmentDoc}`;
+    ${UserResponseFragmentDoc}`;
 
 export function useRegisterMutation() {
   return Urql.useMutation<RegisterMutation, RegisterMutationVariables>(RegisterDocument);
@@ -317,10 +317,10 @@ export function useRegisterMutation() {
 export const MeDocument = gql`
     query Me {
   me {
-    ...UserFragment
+    ...UserSnippet
   }
 }
-    ${UserFragmentFragmentDoc}`;
+    ${UserSnippetFragmentDoc}`;
 
 export function useMeQuery(options: Omit<Urql.UseQueryArgs<MeQueryVariables>, 'query'> = {}) {
   return Urql.useQuery<MeQuery>({ query: MeDocument, ...options });
