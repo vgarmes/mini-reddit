@@ -14,6 +14,7 @@ import cors from 'cors';
 import { createConnection } from 'typeorm';
 import { User } from './entities/User';
 import { Post } from './entities/Post';
+import { Upvote } from './entities/Upvote';
 import path from 'path';
 
 const main = async () => {
@@ -25,7 +26,7 @@ const main = async () => {
     logging: true,
     synchronize: true, // creates tables automatically without having to use migrations
     migrations: [path.join(__dirname, './migrations/*')],
-    entities: [Post, User],
+    entities: [Post, User, Upvote],
   });
 
   await conn.runMigrations();
