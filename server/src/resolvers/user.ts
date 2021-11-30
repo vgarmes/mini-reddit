@@ -1,4 +1,12 @@
-import { Resolver, Mutation, Arg, Ctx, Query } from 'type-graphql';
+import {
+  Resolver,
+  Mutation,
+  Arg,
+  Ctx,
+  Query,
+  FieldResolver,
+  Root,
+} from 'type-graphql';
 import { MyContext } from '../types';
 import {
   PasswordInput,
@@ -17,8 +25,18 @@ import { sendEmail } from '../utils/sendEmail';
 import { v4 } from 'uuid';
 import { mapValidationErrors } from '../utils/mapValidationErrors';
 
-@Resolver()
+@Resolver(User)
 export class UserResolver {
+  @FieldResolver(() => String)
+  email(@Root() user: User, @Ctx() { req }: MyContext) {
+    if (req.session.userId === user.id) {
+      // this is the current user and it's ok to show them their own email
+      return user.email;
+    }
+    // current user wants to see someone else's email
+    return '';
+  }
+
   @Mutation(() => UserResponse)
   async changePassword(
     @Arg('token') token: string,
