@@ -148,6 +148,8 @@ export type UsernamePasswordInput = {
 
 export type ErrorFragmentFragment = { __typename?: 'FieldError', field: string, message: string };
 
+export type PostSnippetFragment = { __typename?: 'Post', id: number, title: string, textSnippet: string, points: number, creatorId: number, createdAt: string, creator: { __typename?: 'User', id: number, username: string } };
+
 export type UserFragmentFragment = { __typename?: 'User', id: number, username: string };
 
 export type UserResponseFragmentFragment = { __typename?: 'UserResponse', errors?: Array<{ __typename?: 'FieldError', field: string, message: string }> | null | undefined, user?: { __typename?: 'User', id: number, username: string } | null | undefined };
@@ -207,6 +209,20 @@ export type PostsQueryVariables = Exact<{
 
 export type PostsQuery = { __typename?: 'Query', posts: { __typename?: 'PaginatedPosts', hasMore: boolean, posts: Array<{ __typename?: 'Post', id: number, title: string, textSnippet: string, points: number, creatorId: number, createdAt: string, creator: { __typename?: 'User', id: number, username: string } }> } };
 
+export const PostSnippetFragmentDoc = gql`
+    fragment PostSnippet on Post {
+  id
+  title
+  textSnippet
+  points
+  creatorId
+  createdAt
+  creator {
+    id
+    username
+  }
+}
+    `;
 export const ErrorFragmentFragmentDoc = gql`
     fragment ErrorFragment on FieldError {
   field
@@ -313,21 +329,12 @@ export const PostsDocument = gql`
     query Posts($limit: Int!, $cursor: String) {
   posts(limit: $limit, cursor: $cursor) {
     posts {
-      id
-      title
-      textSnippet
-      points
-      creatorId
-      createdAt
-      creator {
-        id
-        username
-      }
+      ...PostSnippet
     }
     hasMore
   }
 }
-    `;
+    ${PostSnippetFragmentDoc}`;
 
 export function usePostsQuery(options: Omit<Urql.UseQueryArgs<PostsQueryVariables>, 'query'> = {}) {
   return Urql.useQuery<PostsQuery>({ query: PostsDocument, ...options });
