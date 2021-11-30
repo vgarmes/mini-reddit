@@ -9,6 +9,9 @@ import {
   Ctx,
   UseMiddleware,
   Int,
+  FieldResolver,
+  Root,
+  ObjectType,
 } from 'type-graphql';
 import { MyContext } from '../types';
 import { isAuth } from '../middleware/isAuth';
@@ -26,14 +29,28 @@ class PostInput {
   text: string;
 }
 
-@Resolver()
+@ObjectType()
+class PaginatedPosts {
+  @Field(() => [Post])
+  posts: Post[];
+
+  @Field()
+  hasMore: boolean;
+}
+
+@Resolver(Post) // we need to add Post in arguments because we are using a FieldResolver below
 export class PostResolver {
-  @Query(() => [Post])
+  @FieldResolver(() => String)
+  textSnippet(@Root() root: Post) {
+    return root.text.slice(0, 50);
+  } // this is a field that is not in the db but we create and send to client
+
+  @Query(() => PaginatedPosts)
   async posts(
     @Arg('limit', () => Int) limit: number,
     @Arg('cursor', () => String, { nullable: true }) cursor: string | null
-  ): Promise<Post[]> {
-    const realLimit = Math.min(50, limit); // we cap the limit to 50
+  ): Promise<PaginatedPosts> {
+    const realLimit = Math.min(50, limit) + 1; // we cap the limit to 50 (+1 so we know if there are more posts)
     const query = getConnection()
       .getRepository(Post)
       .createQueryBuilder('p')
@@ -44,7 +61,11 @@ export class PostResolver {
         cursor: new Date(parseInt(cursor)),
       });
     }
-    return query.getMany();
+
+    const posts = await query.getMany();
+    const hasMore = posts.length === realLimit;
+
+    return { posts: posts.slice(0, realLimit - 1), hasMore };
   }
 
   @Query(() => Post, { nullable: true })

@@ -71,6 +71,12 @@ export type MutationUpdatePostArgs = {
   title?: InputMaybe<Scalars['String']>;
 };
 
+export type PaginatedPosts = {
+  __typename?: 'PaginatedPosts';
+  hasMore: Scalars['Boolean'];
+  posts: Array<Post>;
+};
+
 export type PasswordInput = {
   password: Scalars['String'];
 };
@@ -82,6 +88,7 @@ export type Post = {
   id: Scalars['Float'];
   points: Scalars['Float'];
   text: Scalars['String'];
+  textSnippet: Scalars['String'];
   title: Scalars['String'];
   updatedAt: Scalars['String'];
 };
@@ -96,7 +103,7 @@ export type Query = {
   hello: Scalars['String'];
   me?: Maybe<User>;
   post?: Maybe<Post>;
-  posts: Array<Post>;
+  posts: PaginatedPosts;
 };
 
 
@@ -190,7 +197,7 @@ export type PostsQueryVariables = Exact<{
 }>;
 
 
-export type PostsQuery = { __typename?: 'Query', posts: Array<{ __typename?: 'Post', id: number, title: string, text: string, points: number, creatorId: number, createdAt: string }> };
+export type PostsQuery = { __typename?: 'Query', posts: { __typename?: 'PaginatedPosts', hasMore: boolean, posts: Array<{ __typename?: 'Post', id: number, title: string, textSnippet: string, points: number, creatorId: number, createdAt: string }> } };
 
 export const ErrorFragmentFragmentDoc = gql`
     fragment ErrorFragment on FieldError {
@@ -297,12 +304,15 @@ export function useMeQuery(options: Omit<Urql.UseQueryArgs<MeQueryVariables>, 'q
 export const PostsDocument = gql`
     query Posts($limit: Int!, $cursor: String) {
   posts(limit: $limit, cursor: $cursor) {
-    id
-    title
-    text
-    points
-    creatorId
-    createdAt
+    posts {
+      id
+      title
+      textSnippet
+      points
+      creatorId
+      createdAt
+    }
+    hasMore
   }
 }
     `;

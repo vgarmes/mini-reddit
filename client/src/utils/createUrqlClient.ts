@@ -10,6 +10,7 @@ import {
 import { betterUpdateQuery } from './betterUpdateQuery';
 import { pipe, tap } from 'wonka';
 import Router from 'next/router';
+import { cursorPagination } from './cursorPagination';
 
 // errorExchange will catch all errors when using graphql queries/mutations
 const errorExchange: Exchange =
@@ -33,6 +34,14 @@ export const createUrqlClient = (ssrExchange: any) => ({
   exchanges: [
     dedupExchange,
     cacheExchange({
+      keys: {
+        PaginatedPosts: () => null, // no key
+      },
+      resolvers: {
+        Query: {
+          posts: cursorPagination(),
+        },
+      },
       updates: {
         Mutation: {
           logout: (_result, args, cache, info) => {
