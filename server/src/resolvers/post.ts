@@ -40,10 +40,10 @@ class PaginatedPosts {
 
 @Resolver(Post) // we need to add Post in arguments because we are using a FieldResolver below
 export class PostResolver {
-  @FieldResolver(() => String)
+  @FieldResolver(() => String) // this is a field that is not in the db but we create and send to client
   textSnippet(@Root() root: Post) {
     return root.text.slice(0, 50);
-  } // this is a field that is not in the db but we create and send to client
+  }
 
   @Query(() => PaginatedPosts)
   async posts(
@@ -54,10 +54,11 @@ export class PostResolver {
     const query = getConnection()
       .getRepository(Post)
       .createQueryBuilder('p')
-      .orderBy('"createdAt"', 'DESC')
+      .innerJoinAndSelect('p.creator', 'u', 'u.id = p.creatorId')
+      .orderBy('p.createdAt', 'DESC')
       .take(realLimit);
     if (cursor) {
-      query.where('"createdAt" < :cursor', {
+      query.where('p.createdAt < :cursor', {
         cursor: new Date(parseInt(cursor)),
       });
     }
