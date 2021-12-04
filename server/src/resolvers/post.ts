@@ -56,19 +56,51 @@ export class PostResolver {
     const isUpvote = value !== -1;
     const realValue = isUpvote ? 1 : -1;
     const { userId } = req.session;
-    await Upvote.insert({
+
+    const upvote = await Upvote.findOne({ where: { postId, userId } });
+
+    if (upvote && upvote.value !== realValue) {
+      // the user has previously voted this post but user is changing the vote (up to down and viceversa)
+      await getConnection().transaction(async (transactionalEntityManager) => {
+        // if one of the database queries fails, the whole transaction rolls back
+        await transactionalEntityManager
+          .createQueryBuilder()
+          .update(Upvote)
+          .set({ value: realValue })
+          .where('postId = :postId and userId = :userId', { postId, userId })
+          .execute();
+
+        await transactionalEntityManager
+          .createQueryBuilder()
+          .update(Post)
+          .set({ points: () => `points + ${2 * realValue}` })
+          .where('id = :id', { id: postId })
+          .execute();
+      });
+    } else if (!upvote) {
+      // user has never voted this post before
+      await getConnection().transaction(async (transactionalEntityManager) => {
+        await transactionalEntityManager
+          .createQueryBuilder()
+          .insert()
+          .into(Upvote)
+          .values({ userId, postId, value: realValue })
+          .execute();
+
+        await transactionalEntityManager
+          .createQueryBuilder()
+          .update(Post)
+          .set({ points: () => `points + ${realValue}` })
+          .where('id = :id', { id: postId })
+          .execute();
+      });
+    }
+
+    /* await Upvote.insert({
       userId,
       postId,
       value: realValue,
-    });
-
-    await getConnection()
-      .getRepository(Post)
-      .createQueryBuilder()
-      .update()
-      .set({ points: () => `points + ${realValue}` })
-      .where('id = :id', { id: postId })
-      .execute();
+    }); */
 
     return true;
   }
