@@ -16,6 +16,7 @@ import {
 import { MyContext } from '../types';
 import { isAuth } from '../middleware/isAuth';
 import { getConnection } from 'typeorm';
+import { Upvote } from '../entities/Upvote';
 
 // @Query is for getting data
 // @Mutation is for updating, creating, deleting
@@ -43,6 +44,33 @@ export class PostResolver {
   @FieldResolver(() => String) // this is a field that is not in the db but we create and send to client
   textSnippet(@Root() root: Post) {
     return root.text.slice(0, 50);
+  }
+
+  @Mutation(() => Boolean)
+  @UseMiddleware(isAuth)
+  async vote(
+    @Arg('postId', () => Int) postId: number,
+    @Arg('value', () => Int) value: number,
+    @Ctx() { req }: MyContext
+  ) {
+    const isUpvote = value !== -1;
+    const realValue = isUpvote ? 1 : -1;
+    const { userId } = req.session;
+    await Upvote.insert({
+      userId,
+      postId,
+      value: realValue,
+    });
+
+    await getConnection()
+      .getRepository(Post)
+      .createQueryBuilder()
+      .update()
+      .set({ points: () => `points + ${realValue}` })
+      .where('id = :id', { id: postId })
+      .execute();
+
+    return true;
   }
 
   @Query(() => PaginatedPosts)
