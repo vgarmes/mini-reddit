@@ -1,4 +1,4 @@
-import { Box, Link, Flex, Button } from '@chakra-ui/react';
+import { Box, Link, Flex, Button, Heading } from '@chakra-ui/react';
 import NextLink from 'next/link';
 import { useLogoutMutation, useMeQuery } from '../generated/graphql';
 import { useEffect, useState } from 'react';
@@ -12,7 +12,7 @@ const Navbar: React.FC<NavbarProps> = ({}) => {
   const [{ fetching: logoutFetching }, logout] = useLogoutMutation();
   const [{ data, fetching }] = useMeQuery({
     pause: !isMounted,
-  });
+  }); // we actually don't need to pause it until is rendered in the browser because Urql client is set up to pass the cookies in SSR as well
   let body = null;
 
   if (fetching) {
@@ -31,8 +31,11 @@ const Navbar: React.FC<NavbarProps> = ({}) => {
     );
   } else {
     body = (
-      <Flex>
-        <Box mr={2}>{data.me.username}</Box>
+      <Flex align="center">
+        <NextLink href="/create-post" passHref>
+          <Button colorScheme="teal">create post</Button>
+        </NextLink>
+        <Box mx={4}>{data.me.username}</Box>
         <Button
           variant="link"
           onClick={() => logout()}
@@ -45,7 +48,12 @@ const Navbar: React.FC<NavbarProps> = ({}) => {
   }
 
   return (
-    <Flex zIndex={1} position="sticky" top={0} bg="tomato" p={4}>
+    <Flex zIndex={1} position="sticky" top={0} bg="tomato" p={4} align="center">
+      <NextLink href="/">
+        <Link>
+          <Heading>miniReddit</Heading>
+        </Link>
+      </NextLink>
       <Box ml={'auto'}>{body}</Box>
     </Flex>
   );
