@@ -108,13 +108,22 @@ export class PostResolver {
   @Query(() => PaginatedPosts)
   async posts(
     @Arg('limit', () => Int) limit: number,
-    @Arg('cursor', () => String, { nullable: true }) cursor: string | null
+    @Arg('cursor', () => String, { nullable: true }) cursor: string | null,
+    @Ctx() { req }: MyContext
   ): Promise<PaginatedPosts> {
     const realLimit = Math.min(50, limit) + 1; // we cap the limit to 50 (+1 so we know if there are more posts)
     const query = getConnection()
       .getRepository(Post)
       .createQueryBuilder('p')
       .innerJoinAndSelect('p.creator', 'u', 'u.id = p.creatorId')
+      .addSelect((subQuery) => {
+        return subQuery
+          .select('upvote.value', 'value')
+          .from(Upvote, 'upvote')
+          .where('upvote.userId = :userId and upvote.postId = p.id', {
+            userId: req.session.userId,
+          });
+      })
       .orderBy('p.createdAt', 'DESC')
       .take(realLimit);
     if (cursor) {
