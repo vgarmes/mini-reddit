@@ -49,12 +49,14 @@ const Navbar: React.FC<NavbarProps> = ({}) => {
 
   return (
     <Flex zIndex={1} position="sticky" top={0} bg="tomato" p={4} align="center">
-      <NextLink href="/">
-        <Link>
-          <Heading>miniReddit</Heading>
-        </Link>
-      </NextLink>
-      <Box ml={'auto'}>{body}</Box>
+      <Flex flex={1} m="auto" align="center" maxW={800}>
+        <NextLink href="/">
+          <Link>
+            <Heading>miniReddit</Heading>
+          </Link>
+        </NextLink>
+        <Box ml={'auto'}>{body}</Box>
+      </Flex>
     </Flex>
   );
 };
