@@ -33,7 +33,9 @@ const Navbar: React.FC<NavbarProps> = ({}) => {
     body = (
       <Flex align="center">
         <NextLink href="/create-post" passHref>
-          <Button colorScheme="teal">create post</Button>
+          <Button as={Link} colorScheme="teal">
+            create post
+          </Button>
         </NextLink>
         <Box mx={4}>{data.me.username}</Box>
         <Button
