@@ -34,7 +34,7 @@ export const createUrqlClient = (ssrExchange: any, ctx: any) => {
   let cookie = '';
   if (isSSR()) {
     // this way we can pass cookies to our graphql even when in SSR
-    cookie = ctx.req.headers.cookie;
+    cookie = ctx?.req?.headers?.cookie;
   }
 
   return {
