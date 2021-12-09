@@ -1,6 +1,10 @@
 import { createUrqlClient } from '../utils/createUrqlClient';
 import { withUrqlClient } from 'next-urql';
-import { useDeletePostMutation, usePostsQuery } from '../generated/graphql';
+import {
+  useDeletePostMutation,
+  useMeQuery,
+  usePostsQuery,
+} from '../generated/graphql';
 import Layout from '../components/Layout';
 import {
   Stack,
@@ -15,13 +19,15 @@ import {
 import NextLink from 'next/link';
 import { useState } from 'react';
 import Votes from '../components/Votes';
-import { DeleteIcon } from '@chakra-ui/icons';
+import { DeleteIcon, EditIcon } from '@chakra-ui/icons';
 
 const Index = () => {
   const [variables, setVariables] = useState({
     limit: 15,
     cursor: null as string | null,
   });
+
+  const [{ data: meData }] = useMeQuery();
   const [{ data, fetching }] = usePostsQuery({
     variables,
   });
@@ -38,34 +44,56 @@ const Index = () => {
         <div>loading...</div>
       ) : (
         <Stack spacing={8}>
-          {data.posts.posts.map((p) => (
-            <Flex key={p.id} p={5} shadow="md" borderWidth="1px" align="center">
-              <Votes post={p} />
-              <Box flex={1}>
-                <NextLink href="/post/[id]" as={`/post/${p.id}`}>
-                  <Link>
-                    <Heading fontSize="xl">{p.title}</Heading>
-                  </Link>
-                </NextLink>
-                <Text flex={1} mt={4}>
-                  posted by {p.creator.username}
-                </Text>
-                <Flex>
+          {data.posts.posts.map((p) =>
+            !p ? null : ( // we might have undefined posts because of invalidated cache after deleting them
+              <Flex
+                key={p.id}
+                p={5}
+                shadow="md"
+                borderWidth="1px"
+                align="center"
+              >
+                <Votes post={p} />
+                <Box flex={1}>
+                  <NextLink href="/post/[id]" as={`/post/${p.id}`}>
+                    <Link>
+                      <Heading fontSize="xl">{p.title}</Heading>
+                    </Link>
+                  </NextLink>
                   <Text flex={1} mt={4}>
-                    {p.textSnippet}...
+                    posted by {p.creator.username}
                   </Text>
-                  <IconButton
-                    ml="auto"
-                    aria-label="delete post"
-                    icon={<DeleteIcon />}
-                    onClick={() => {
-                      deletePost({ id: p.id });
-                    }}
-                  />
-                </Flex>
-              </Box>
-            </Flex>
-          ))}
+                  <Flex>
+                    <Text flex={1} mt={4}>
+                      {p.textSnippet}...
+                    </Text>
+
+                    {meData?.me?.id !== p.creator.id ? null : (
+                      <Box ml="auto">
+                        <NextLink href={`/post/edit/${p.id}`} passHref>
+                          <IconButton
+                            as={Link}
+                            ml="auto"
+                            mr={4}
+                            aria-label="edit post"
+                            icon={<EditIcon />}
+                          />
+                        </NextLink>
+                        <IconButton
+                          ml="auto"
+                          aria-label="delete post"
+                          icon={<DeleteIcon />}
+                          onClick={() => {
+                            deletePost({ id: p.id });
+                          }}
+                        />
+                      </Box>
+                    )}
+                  </Flex>
+                </Box>
+              </Flex>
+            )
+          )}
         </Stack>
       )}
 
