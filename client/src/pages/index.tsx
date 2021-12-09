@@ -1,25 +1,20 @@
-import { createUrqlClient } from '../utils/createUrqlClient';
-import { withUrqlClient } from 'next-urql';
 import {
-  useDeletePostMutation,
-  useMeQuery,
-  usePostsQuery,
-} from '../generated/graphql';
-import Layout from '../components/Layout';
-import {
-  Stack,
   Box,
-  Heading,
-  Text,
-  Flex,
-  Link,
   Button,
-  IconButton,
+  Flex,
+  Heading,
+  Link,
+  Stack,
+  Text,
 } from '@chakra-ui/react';
+import { withUrqlClient } from 'next-urql';
 import NextLink from 'next/link';
 import { useState } from 'react';
+import Layout from '../components/Layout';
+import PostButtons from '../components/PostButtons';
 import Votes from '../components/Votes';
-import { DeleteIcon, EditIcon } from '@chakra-ui/icons';
+import { useMeQuery, usePostsQuery } from '../generated/graphql';
+import { createUrqlClient } from '../utils/createUrqlClient';
 
 const Index = () => {
   const [variables, setVariables] = useState({
@@ -31,8 +26,6 @@ const Index = () => {
   const [{ data, fetching }] = usePostsQuery({
     variables,
   });
-
-  const [, deletePost] = useDeletePostMutation();
 
   if (!fetching && !data) {
     return <div>No posts could be loaded</div>;
@@ -68,27 +61,9 @@ const Index = () => {
                       {p.textSnippet}...
                     </Text>
 
-                    {meData?.me?.id !== p.creator.id ? null : (
-                      <Box ml="auto">
-                        <NextLink href={`/post/edit/${p.id}`} passHref>
-                          <IconButton
-                            as={Link}
-                            ml="auto"
-                            mr={4}
-                            aria-label="edit post"
-                            icon={<EditIcon />}
-                          />
-                        </NextLink>
-                        <IconButton
-                          ml="auto"
-                          aria-label="delete post"
-                          icon={<DeleteIcon />}
-                          onClick={() => {
-                            deletePost({ id: p.id });
-                          }}
-                        />
-                      </Box>
-                    )}
+                    <Box ml="auto">
+                      <PostButtons id={p.id} creatorId={p.creator.id} />
+                    </Box>
                   </Flex>
                 </Box>
               </Flex>
