@@ -1,8 +1,10 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
+// uncomment code for inserting mock data, and
+// replace line 6 with: public async up(queryRunner: QueryRunner): Promise<void> {
 export class FakePosts1638202296161 implements MigrationInterface {
-  public async up(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`insert into post (title, text, "creatorId", "createdAt") values ('Never Weaken', 'In quis justo. Maecenas rhoncus aliquam lacus. Morbi quis tortor id nulla ultrices aliquet.
+  public async up(_: QueryRunner): Promise<void> {
+    /* await queryRunner.query(`insert into post (title, text, "creatorId", "createdAt") values ('Never Weaken', 'In quis justo. Maecenas rhoncus aliquam lacus. Morbi quis tortor id nulla ultrices aliquet.
 
 Maecenas leo odio, condimentum id, luctus nec, molestie sed, justo. Pellentesque viverra pede ac diam. Cras pellentesque volutpat dui.
 
@@ -301,7 +303,7 @@ insert into post (title, text, "creatorId", "createdAt") values ('Ping Pong', 'N
 
 In quis justo. Maecenas rhoncus aliquam lacus. Morbi quis tortor id nulla ultrices aliquet.
 
-Maecenas leo odio, condimentum id, luctus nec, molestie sed, justo. Pellentesque viverra pede ac diam. Cras pellentesque volutpat dui.', 1, '2021-01-16T17:28:04Z');`);
+Maecenas leo odio, condimentum id, luctus nec, molestie sed, justo. Pellentesque viverra pede ac diam. Cras pellentesque volutpat dui.', 1, '2021-01-16T17:28:04Z');`); */
   }
 
   public async down(_: QueryRunner): Promise<void> {}

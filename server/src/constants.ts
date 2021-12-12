@@ -6,5 +6,6 @@ export const COOKIE_OPTIONS = {
   httpOnly: true, // so user cant access cookie from the frontend
   sameSite: 'lax', // 'lax' csrf, set to none in dev env so cookie can be sent to Apollo Studio
   secure: __prod__, // __prod__ cookie only works in https
+  domain: __prod__ ? '.yourdomain.com' : undefined, // replace with your domain in production (though it may work without setting it)
 } as CookieOptions;
 export const FORGET_PASSWORD_PREFIX = 'forget-password:';

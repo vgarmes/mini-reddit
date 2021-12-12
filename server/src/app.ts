@@ -22,11 +22,9 @@ import { createUpvoteLoader } from './utils/createUpvoteLoader';
 const main = async () => {
   const conn = await createConnection({
     type: 'postgres',
-    database: 'minireddit',
-    username: 'postgres',
-    password: 'postgres',
+    url: process.env.DATABASE_URL,
     logging: true,
-    synchronize: true, // creates tables automatically without having to use migrations
+    // synchronize: true, // creates tables automatically without having to use migrations (use only in development)
     migrations: [path.join(__dirname, './migrations/*')],
     entities: [Post, User, Upvote],
   });
@@ -36,23 +34,13 @@ const main = async () => {
   const app = express();
 
   const RedisStore = connectRedis(session);
-  const redis = new Redis();
+  const redis = new Redis(process.env.REDIS_URL);
 
   app.set('trust proxy', 1);
-  const whitelist = ['http://localhost:3000'];
+
   app.use(
     cors({
-      origin: function (origin, callback) {
-        if (!__prod__) {
-          return callback(null, true);
-        }
-
-        if (origin && whitelist.indexOf(origin) !== -1) {
-          callback(null, true);
-        } else {
-          callback(new Error(`${origin} : Not allowed by CORS`));
-        }
-      },
+      origin: process.env.CORS_ORIGIN,
       credentials: true,
     })
   );
@@ -67,7 +55,7 @@ const main = async () => {
       }),
       cookie: COOKIE_OPTIONS,
       saveUninitialized: false, // do not store empty sessions
-      secret: 'keyboard cat',
+      secret: process.env.SESSION_SECRET,
       resave: false,
     })
   );
@@ -89,7 +77,7 @@ const main = async () => {
   await apolloServer.start();
   apolloServer.applyMiddleware({ app, cors: false });
 
-  app.listen(5000, () => {
+  app.listen(parseInt(process.env.PORT), () => {
     console.log('server listening on port 5000...');
   });
 };
