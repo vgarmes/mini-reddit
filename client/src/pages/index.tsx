@@ -23,12 +23,17 @@ const Index = () => {
   });
 
   const [{ data: meData }] = useMeQuery();
-  const [{ data, fetching }] = usePostsQuery({
+  const [{ data, error, fetching }] = usePostsQuery({
     variables,
   });
 
   if (!fetching && !data) {
-    return <div>No posts could be loaded</div>;
+    return (
+      <Box>
+        <Text>No posts could be loaded</Text>
+        <Text>{error?.message}</Text>
+      </Box>
+    );
   }
 
   return (
