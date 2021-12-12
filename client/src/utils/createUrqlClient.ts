@@ -1,5 +1,5 @@
 import { dedupExchange, fetchExchange, Exchange } from '@urql/core';
-import { cacheExchange } from '@urql/exchange-graphcache';
+import { Cache, cacheExchange } from '@urql/exchange-graphcache';
 import {
   LogoutMutation,
   MeQuery,
@@ -15,6 +15,15 @@ import Router from 'next/router';
 import { cursorPagination } from './cursorPagination';
 import { gql } from '@urql/core';
 import { isSSR } from './isSSR';
+
+function invalidateAllPosts(cache: Cache) {
+  // invalidates cache for posts so they are fetched again
+  const allFields = cache.inspectFields('Query');
+  const fieldInfos = allFields.filter((info) => info.fieldName === 'posts');
+  fieldInfos.forEach((fi) => {
+    cache.invalidate('Query', 'posts', fi.arguments);
+  });
+}
 
 // errorExchange will catch all errors when using graphql queries/mutations
 const errorExchange: Exchange =
@@ -102,14 +111,7 @@ export const createUrqlClient = (ssrExchange: any, ctx: any) => {
               }
             },
             createPost: (_result, args, cache, info) => {
-              // invalidates cache for posts so they are fetched again after user posts
-              const allFields = cache.inspectFields('Query');
-              const fieldInfos = allFields.filter(
-                (info) => info.fieldName === 'posts'
-              );
-              fieldInfos.forEach((fi) => {
-                cache.invalidate('Query', 'posts', fi.arguments);
-              });
+              invalidateAllPosts(cache);
             },
             logout: (_result, args, cache, info) => {
               betterUpdateQuery<LogoutMutation, MeQuery>(
@@ -134,6 +136,7 @@ export const createUrqlClient = (ssrExchange: any, ctx: any) => {
                   }
                 }
               );
+              invalidateAllPosts(cache);
             },
             register: (_result, args, cache, info) => {
               betterUpdateQuery<RegisterMutation, MeQuery>(
