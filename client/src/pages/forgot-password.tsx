@@ -11,13 +11,13 @@ interface Props {}
 
 const ForgotPassword = (props: Props) => {
   const [complete, setComplete] = useState(false);
-  const [, forgotPassword] = useForgotPasswordMutation();
+  const [forgotPassword] = useForgotPasswordMutation();
   return (
     <Wrapper variant="small">
       <Formik
         initialValues={{ email: '' }}
-        onSubmit={async (values, { setErrors }) => {
-          await forgotPassword(values);
+        onSubmit={async (values) => {
+          await forgotPassword({ variables: values });
           setComplete(true);
         }}
       >
@@ -49,4 +49,4 @@ const ForgotPassword = (props: Props) => {
   );
 };
 
-export default withUrqlClient(createUrqlClient)(ForgotPassword);
+export default ForgotPassword;

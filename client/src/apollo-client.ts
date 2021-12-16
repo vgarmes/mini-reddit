@@ -1,7 +1,5 @@
-import { ChakraProvider, ColorModeProvider } from '@chakra-ui/react';
-import theme from '../theme';
-import { ApolloProvider, ApolloClient, InMemoryCache } from '@apollo/client';
-import { PaginatedPosts } from '../generated/graphql';
+import { ApolloClient, InMemoryCache } from '@apollo/client';
+import { PaginatedPosts } from './generated/graphql';
 
 const client = new ApolloClient({
   uri: process.env.NEXT_PUBLIC_API_URL as string,
@@ -28,20 +26,4 @@ const client = new ApolloClient({
   }),
 });
 
-function MyApp({ Component, pageProps }) {
-  return (
-    <ApolloProvider client={client}>
-      <ChakraProvider resetCSS theme={theme}>
-        <ColorModeProvider
-          options={{
-            useSystemColorMode: true,
-          }}
-        >
-          <Component {...pageProps} />
-        </ColorModeProvider>
-      </ChakraProvider>
-    </ApolloProvider>
-  );
-}
-
-export default MyApp;
+export default client;

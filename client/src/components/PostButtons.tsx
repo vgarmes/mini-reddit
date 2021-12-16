@@ -9,8 +9,8 @@ interface PostButtonsProps {
 }
 
 const PostButtons: React.FC<PostButtonsProps> = ({ id, creatorId }) => {
-  const [, deletePost] = useDeletePostMutation();
-  const [{ data: meData }] = useMeQuery();
+  const [deletePost] = useDeletePostMutation();
+  const { data: meData } = useMeQuery();
 
   if (meData?.me?.id !== creatorId) {
     return null;
@@ -32,7 +32,7 @@ const PostButtons: React.FC<PostButtonsProps> = ({ id, creatorId }) => {
         aria-label="delete post"
         icon={<DeleteIcon />}
         onClick={() => {
-          deletePost({ id });
+          deletePost({ variables: { id } });
         }}
       />
     </>
