@@ -3,6 +3,7 @@ import NextLink from 'next/link';
 import { useLogoutMutation, useMeQuery } from '../generated/graphql';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
+import { useApolloClient } from '@apollo/client';
 
 interface NavbarProps {}
 
@@ -11,13 +12,14 @@ const Navbar: React.FC<NavbarProps> = ({}) => {
   const [isMounted, setIsMounted] = useState(false);
   useEffect(() => setIsMounted(true), []);
 
-  const [{ fetching: logoutFetching }, logout] = useLogoutMutation();
-  const [{ data, fetching }] = useMeQuery({
-    pause: !isMounted,
+  const [logout, { loading: logoutFetching }] = useLogoutMutation();
+  const apolloClient = useApolloClient();
+  const { data, loading } = useMeQuery({
+    skip: !isMounted,
   }); // we actually don't need to pause it until is rendered in the browser because Urql client is set up to pass the cookies in SSR as well
   let body = null;
 
-  if (fetching) {
+  if (loading) {
   } else if (!data?.me) {
     body = (
       <>
@@ -44,7 +46,7 @@ const Navbar: React.FC<NavbarProps> = ({}) => {
           variant="link"
           onClick={async () => {
             await logout();
-            router.reload(); // we reload page in order to invalidate all cache
+            await apolloClient.resetStore();
           }}
           isLoading={logoutFetching}
         >

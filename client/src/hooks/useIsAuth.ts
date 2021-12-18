@@ -3,13 +3,13 @@ import { useRouter } from 'next/router';
 import { useEffect } from 'react';
 
 export const useIsAuth = () => {
-  const [{ data, fetching }] = useMeQuery();
+  const { data, loading } = useMeQuery();
   const router = useRouter();
   useEffect(() => {
-    if (!fetching && !data?.me) {
+    if (!loading && !data?.me) {
       router.replace('/login?next=' + router.pathname);
     }
-  }, [fetching, data, router]);
+  }, [loading, data, router]);
 
-  return { data, fetching };
+  return { data, loading };
 };

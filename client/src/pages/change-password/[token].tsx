@@ -6,12 +6,15 @@ import { Button } from '@chakra-ui/button';
 import { Box } from '@chakra-ui/layout';
 import InputField from '../../components/InputField';
 import Wrapper from '../../components/Wrapper';
-import { useChangePasswordMutation } from '../../generated/graphql';
-import { withUrqlClient } from 'next-urql';
-import { createUrqlClient } from '../../utils/createUrqlClient';
+import {
+  MeDocument,
+  MeQuery,
+  useChangePasswordMutation,
+} from '../../generated/graphql';
+import { withApollo } from '../../utils/withApollo';
 
 const ChangePassword = () => {
-  const [, changePassword] = useChangePasswordMutation();
+  const [changePassword] = useChangePasswordMutation();
   const router = useRouter();
   const { token } = router.query;
   const [tokenError, setTokenError] = useState('');
@@ -21,8 +24,19 @@ const ChangePassword = () => {
         initialValues={{ password: '' }}
         onSubmit={async (values, { setErrors }) => {
           const response = await changePassword({
-            newPassword: { password: values.password },
-            token: typeof token === 'string' ? token : '',
+            variables: {
+              newPassword: { password: values.password },
+              token: typeof token === 'string' ? token : '',
+            },
+            update: (cache, { data }) => {
+              cache.writeQuery<MeQuery>({
+                query: MeDocument,
+                data: {
+                  __typename: 'Query',
+                  me: data?.changePassword.user,
+                },
+              });
+            },
           });
 
           if (response.data?.changePassword.errors) {
@@ -60,4 +74,4 @@ const ChangePassword = () => {
   );
 };
 
-export default withUrqlClient(createUrqlClient)(ChangePassword);
+export default withApollo({ ssr: false })(ChangePassword);
