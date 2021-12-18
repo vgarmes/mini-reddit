@@ -32,7 +32,12 @@ const PostButtons: React.FC<PostButtonsProps> = ({ id, creatorId }) => {
         aria-label="delete post"
         icon={<DeleteIcon />}
         onClick={() => {
-          deletePost({ variables: { id } });
+          deletePost({
+            variables: { id },
+            update: (cache) => {
+              cache.evict({ id: 'Post:' + id }); // deletes cache for the deleted post
+            },
+          });
         }}
       />
     </>

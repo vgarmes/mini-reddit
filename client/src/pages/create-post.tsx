@@ -5,6 +5,7 @@ import { Formik, Form } from 'formik';
 import { useCreatePostMutation } from '../generated/graphql';
 import { useRouter } from 'next/router';
 import { useIsAuth } from '../hooks/useIsAuth';
+import { withApollo } from '../utils/withApollo';
 
 const CreatePost = () => {
   const router = useRouter();
@@ -20,7 +21,12 @@ const CreatePost = () => {
       <Formik
         initialValues={{ title: '', text: '' }}
         onSubmit={async (values) => {
-          const { errors } = await createPost({ variables: { input: values } });
+          const { errors } = await createPost({
+            variables: { input: values },
+            update: (cache) => {
+              cache.evict({ fieldName: 'posts:{}' });
+            },
+          });
           if (!errors) {
             router.push('/');
           } // if there is any error, the global handler errorExchange will handle it
@@ -53,4 +59,4 @@ const CreatePost = () => {
   );
 };
 
-export default CreatePost;
+export default withApollo({ ssr: false })(CreatePost);

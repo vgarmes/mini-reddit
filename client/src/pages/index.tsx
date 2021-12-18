@@ -12,6 +12,7 @@ import Layout from '../components/Layout';
 import PostButtons from '../components/PostButtons';
 import Votes from '../components/Votes';
 import { usePostsQuery } from '../generated/graphql';
+import { withApollo } from '../utils/withApollo';
 
 const Index = () => {
   const { data, error, loading, fetchMore, variables } = usePostsQuery({
@@ -96,4 +97,4 @@ const Index = () => {
   );
 };
 
-export default Index;
+export default withApollo({ ssr: true })(Index);

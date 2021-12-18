@@ -6,7 +6,12 @@ import { Button } from '@chakra-ui/button';
 import { Box } from '@chakra-ui/layout';
 import InputField from '../../components/InputField';
 import Wrapper from '../../components/Wrapper';
-import { useChangePasswordMutation } from '../../generated/graphql';
+import {
+  MeDocument,
+  MeQuery,
+  useChangePasswordMutation,
+} from '../../generated/graphql';
+import { withApollo } from '../../utils/withApollo';
 
 const ChangePassword = () => {
   const [changePassword] = useChangePasswordMutation();
@@ -22,6 +27,15 @@ const ChangePassword = () => {
             variables: {
               newPassword: { password: values.password },
               token: typeof token === 'string' ? token : '',
+            },
+            update: (cache, { data }) => {
+              cache.writeQuery<MeQuery>({
+                query: MeDocument,
+                data: {
+                  __typename: 'Query',
+                  me: data?.changePassword.user,
+                },
+              });
             },
           });
 
@@ -60,4 +74,4 @@ const ChangePassword = () => {
   );
 };
 
-export default ChangePassword;
+export default withApollo({ ssr: false })(ChangePassword);

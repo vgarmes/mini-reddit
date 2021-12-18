@@ -3,6 +3,7 @@ import { Heading } from '@chakra-ui/react';
 import { useGetPostFromUrl } from '../../hooks/useGetPostFromUrl';
 import PostButtons from '../../components/PostButtons';
 import { Box } from '@chakra-ui/react';
+import { withApollo } from '../../utils/withApollo';
 
 const Post = ({}) => {
   const { data, loading } = useGetPostFromUrl();
@@ -32,4 +33,4 @@ const Post = ({}) => {
   );
 };
 
-export default Post;
+export default withApollo({ ssr: true })(Post);
